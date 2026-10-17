@@ -1,27 +1,29 @@
 
-# Run expressvpn in a container
+# Run the ExpressVPN (v5+ headless, expressvpnctl) client in a container
 
-FROM debian:bullseye-slim
+FROM debian:trixie-slim
 
 LABEL maintainer="benjamin@polkaned.net"
 
-ENV ACTIVATION_CODE Code
-ENV LOCATION smart
-ENV PREFERRED_PROTOCOL auto
-ENV LIGHTWAY_CIPHER auto
+ENV SERVER=smart
+ENV PROTOCOL=auto
+ENV ACTIVATION_CODE_FILE=/run/secrets/expressvpn_activation_code
+ENV CONNECT_RETRIES=5
 
-ARG APP=expressvpn_3.57.0.3-1_amd64.deb
+ARG EXPRESSVPN_VERSION=14.2.0.13656
+ARG EXPRESSVPN_RUN_URL=https://www.expressvpn.works/clients/linux/expressvpn-linux-universal-${EXPRESSVPN_VERSION}_release.run
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libterm-readkey-perl ca-certificates wget expect iproute2 iputils-ping curl procps libnm0 \
-    && wget -q "https://www.expressvpn.works/clients/linux/${APP}" -O /tmp/${APP} \
-    && dpkg -i /tmp/${APP} \
-    && rm -rf /tmp/*.deb \
-    && apt-get update && apt-get upgrade -y expressvpn \
-    && apt-get purge -y --auto-remove wget \
-    && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    export DEBIAN_FRONTEND=noninteractive; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates curl iproute2 iptables iputils-ping procps \
+        libatomic1 libdbus-1-3 libglib2.0-0 xz-utils; \
+    curl -fsSL "${EXPRESSVPN_RUN_URL}" -o /tmp/expressvpn.run; \
+    sh /tmp/expressvpn.run --accept --quiet --noprogress -- --no-gui --sysvinit --force-dependencies; \
+    rm -f /tmp/expressvpn.run; \
+    rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /tmp/entrypoint.sh
-COPY expressvpnActivate.sh /tmp/expressvpnActivate.sh
 
 ENTRYPOINT ["/bin/bash", "/tmp/entrypoint.sh"]

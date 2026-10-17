@@ -1,3 +1,13 @@
+> **Updated for the ExpressVPN v5+ headless client (`expressvpnctl`).**
+> The old `ACTIVATION_CODE` env / `--privileged` examples below no longer apply:
+> - Put the activation code alone in a file and mount it as the docker secret `expressvpn_activation_code`
+>   (`/run/secrets/expressvpn_activation_code`). Rotate it by editing the file and restarting the container.
+>   `ACTIVATION_CODE` env is still read as a fallback.
+> - Required: `cap_add: [NET_ADMIN, SYS_PTRACE]` and `/dev/net/tun`. No `privileged` needed.
+> - Network lock (kill switch) is always enabled, the entrypoint refuses to start the workload unless the VPN
+>   is connected, and the transmission image exits (container restarts) if the tunnel stays down for 30s.
+> - See `expressvpn-transmission/docker-compose-example.yaml` and `build_local.sh`.
+
 # ExpressVPN and Transmission in a container
 
 ## Prerequisites
