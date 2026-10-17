@@ -11,6 +11,7 @@ services:
     security_opt:
       - no-new-privileges:true
     volumes:
+      - ./config:/root/.config/transmission-daemon
       - /home/user/Torrents:/var/lib/transmission-daemon/downloads
     environment:
       SERVER: smart
