@@ -5,6 +5,8 @@
 # WATCHDOG_MISSES consecutive failed 10s checks. Network lock blocks leaks meanwhile.
 WATCHDOG_GRACE=${WATCHDOG_GRACE:-90}
 WATCHDOG_MISSES=${WATCHDOG_MISSES:-6}
+# Ask the client to reconnect (it does not always do so itself) every 2nd failed check
+WATCHDOG_RECONNECT=${WATCHDOG_RECONNECT:-2}
 
 param=(--allowed "${T_ALLOWED}")
 param+=(--foreground)
@@ -31,6 +33,10 @@ while kill -0 "$pid" 2>/dev/null; do
     else
         down=$((down + 1))
         echo "[transmission] VPN not connected (${down}/${WATCHDOG_MISSES})"
+        if [ $((down % WATCHDOG_RECONNECT)) -eq 0 ] && [ "$down" -lt "$WATCHDOG_MISSES" ]; then
+            echo "[transmission] requesting VPN reconnect to ${SERVER:-smart}"
+            timeout 30 expressvpnctl connect "${SERVER:-smart}" > /dev/null 2>&1 || true
+        fi
         if [ "$down" -ge "$WATCHDOG_MISSES" ]; then
             kill "$pid" 2>/dev/null
             wait "$pid"
