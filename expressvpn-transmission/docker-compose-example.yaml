@@ -1,6 +1,7 @@
 services:
   transmission:
-    image: speeddemonau/expressvpn-transmission:latest
+    image: speeddemonau/expressvpn-transmission:local
+    pull_policy: never
     container_name: transmission
     restart: unless-stopped
     cap_add:

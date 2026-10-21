@@ -56,6 +56,8 @@ for attempt in $(seq 1 "${CONNECT_RETRIES}"); do
 done
 for _ in $(seq 1 30); do connected && break; sleep 2; done
 connected || { log "VPN not connected, refusing to start workload"; exit 1; }
+for _ in $(seq 1 15); do vpn-ok && break; sleep 2; done
+vpn-ok || { log "no traffic through the tunnel, refusing to start workload"; exit 1; }
 log "connected"
 
 exec "$@"

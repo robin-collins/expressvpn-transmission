@@ -1,7 +1,7 @@
 
 # Run expressvpn and transmission in a container
 
-FROM speeddemonau/expressvpn:latest
+FROM speeddemonau/expressvpn:local
 LABEL maintainer="benjamin@polkaned.net"
 
 ENV T_ALLOWED=127.0.0.1
@@ -15,6 +15,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY transmission.sh /tmp/transmission.sh
 
 HEALTHCHECK --start-period=60s --interval=30s --timeout=10s --retries=3 \
-    CMD [ "$(expressvpnctl get connectionstate)" = "Connected" ] || exit 1
+    CMD vpn-ok
 
 CMD ["/bin/bash", "/tmp/transmission.sh"]

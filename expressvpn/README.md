@@ -4,8 +4,14 @@
 >   (`/run/secrets/expressvpn_activation_code`). Rotate it by editing the file and restarting the container.
 >   `ACTIVATION_CODE` env is still read as a fallback.
 > - Required: `cap_add: [NET_ADMIN, SYS_PTRACE]` and `/dev/net/tun`. No `privileged` needed.
-> - Network lock (kill switch) is always enabled, the entrypoint refuses to start the workload unless the VPN
->   is connected, and the transmission image exits (container restarts) if the tunnel stays down for 30s.
+> - Network lock (kill switch) is always enabled, and `vpn-ok` (`expressvpn/vpn-ok.sh`) only passes when the
+>   client says Connected, network lock is on, AND a real request gets through (the client keeps reporting
+>   Connected on a dead tunnel). The entrypoint refuses to start the workload until `vpn-ok` passes; the
+>   transmission watchdog forces disconnect+connect on failed checks and exits (container restarts) after 6
+>   consecutive misses (~2-2.5 min, plus a 90s grace after startup). Non-VPN traffic is blocked throughout.
+> - Build with `./build_local.sh`, which tags `:local`. That tag doesn't exist on Docker Hub. Use it with
+>   `pull_policy: never`: Hub's `:latest` is the old 2023 image with no kill switch.
+>   See `INCIDENT-2026-10-22-vpn-leak.md`.
 > - See `expressvpn-transmission/docker-compose-example.yaml` and `build_local.sh`.
 
 # ExpressVPN in a container

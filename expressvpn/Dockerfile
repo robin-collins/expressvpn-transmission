@@ -25,5 +25,6 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /tmp/entrypoint.sh
+COPY --chmod=755 vpn-ok.sh /usr/local/bin/vpn-ok
 
 ENTRYPOINT ["/bin/bash", "/tmp/entrypoint.sh"]
